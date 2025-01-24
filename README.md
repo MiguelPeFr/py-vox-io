@@ -1,7 +1,6 @@
 py-vox-io
 =========
-
-This project is kinda old and outdated - but check out https://github.com/midstreeeam/MidVoxIO
+Admit .vox version 200
 
 A Python parser and writer for the [Magica Voxel .vox
 format](https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox.txt)
