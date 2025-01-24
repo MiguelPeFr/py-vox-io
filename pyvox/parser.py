@@ -88,28 +88,40 @@ class VoxParser(object):
 
             if header != b'VOX ': raise ParsingException("This doesn't look like a vox file to me")
 
-            if version != 150: raise ParsingException("Unknown vox version: %s expected 150"%version)
+            if version > 200: raise ParsingException("Unknown vox version: %s expected 200 or lower"%version)
 
             main = self._parseChunk()
 
             if main.id != b'MAIN': raise ParsingException("Missing MAIN Chunk")
 
             chunks = list(reversed(main.chunks))
-            if chunks[-1].id == b'PACK':
-                models = chunks.pop().models
-            else:
-                models = 1
-
+            models = 1
+            palette = None
+            size_chunks = []
+            xyzi_chunks = []
+            
+            # First pass: categorize chunks
+            for chunk in chunks:
+                if chunk.id == b'PACK':
+                    models = chunk.models
+                elif chunk.id == b'RGBA':
+                    palette = chunk.palette
+                elif chunk.id == b'SIZE':
+                    size_chunks.append(chunk)
+                elif chunk.id == b'XYZI':
+                    xyzi_chunks.append(chunk)
+            
             log.debug("file has %d models", models)
+            
+            # Ensure we have matching pairs of SIZE and XYZI chunks
+            if len(size_chunks) != len(xyzi_chunks):
+                raise ParsingException(f"Mismatched number of SIZE ({len(size_chunks)}) and XYZI ({len(xyzi_chunks)}) chunks")
+            
+            # Create models from matching pairs
+            models = [self._parseModel(size, xyzi) for size, xyzi in zip(size_chunks, xyzi_chunks)]
 
-            models = [ self._parseModel(chunks.pop(), chunks.pop()) for _ in range(models) ]
-
-            if chunks and chunks[0].id == b'RGBA':
-                palette = chunks.pop().palette
-            else:
-                palette = None
-
-            materials = [ c.material for c in chunks ]
+            # Filter out chunks that have material information
+            materials = [c.material for c in chunks if hasattr(c, 'material')]
 
             return Vox(models, palette, materials)
 
