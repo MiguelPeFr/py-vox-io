@@ -1,10 +1,7 @@
-from struct import unpack_from as unpack, calcsize
-import logging
+from pyvox.parser import VoxParser
+from pyvox.models import Vox
 import numpy as np
-
-from .models import Vox, Size, Voxel, Color, Model, Material
-
-log = logging.getLogger(__name__)
+from struct import unpack
 
 class VoxModel(Vox):
     def __init__(self):
@@ -49,7 +46,7 @@ class VoxModel(Vox):
         model.palette = palette
         return model
 
-class VoxParser(object):
+class CustomVoxParser(VoxParser):
     class Chunk:
         def __init__(self, chunk_id, content, children):
             self.id = chunk_id
@@ -58,6 +55,7 @@ class VoxParser(object):
 
     def __init__(self, filename):
         self._file = open(filename, 'rb')
+        super().__init__(filename)
 
     def _parse_chunk(self):
         """Parse a chunk from the file"""
@@ -68,8 +66,8 @@ class VoxParser(object):
         n_content = int.from_bytes(self._file.read(4), byteorder='little')
         n_children = int.from_bytes(self._file.read(4), byteorder='little')
 
-        if chunk_id == b'NOTE':
-            # Skip NOTE chunk data as we don't need it for visualization
+        if chunk_id in [b'NOTE', b'nTRN', b'nGRP', b'nSHP']:
+            # Skip node chunks and NOTE chunk data as we don't need them for visualization
             self._file.seek(n_content, 1)  # Seek relative to current position
             return None
         else:
@@ -116,9 +114,3 @@ class VoxParser(object):
         rgba = next((c for c in main.children if c.id == b'RGBA'), None)
 
         return VoxModel.from_chunks(size, xyzi, rgba)
-
-if __name__ == '__main__':
-    import sys
-    import coloredlogs
-    coloredlogs.install(level=logging.DEBUG)
-    VoxParser(sys.argv[1]).parse()
