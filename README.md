@@ -1,5 +1,5 @@
 # py-vox-io
-=========
+
 > [!IMPORTANT]
 > Now works with current voxel formats of version 200 and more complex models.
 
