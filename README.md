@@ -1,12 +1,12 @@
-py-vox-io
+# py-vox-io
 =========
-Admit .vox version 200
+> [!IMPORTANT]
+> Now works with current voxel formats of version 200 and more complex models.
 
 A Python parser and writer for the [Magica Voxel .vox
 format](https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox.txt)
 
 ![sample1](https://raw.githubusercontent.com/gromgull/py-vox-io/master/samples/1.png)
-![sample2](https://raw.githubusercontent.com/gromgull/py-vox-io/master/samples/2.png)
 
 
 The base parser/writer has no dependencies.
